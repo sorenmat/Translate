@@ -11,11 +11,9 @@ import java.net.{URL, URLEncoder}
 
 class Translate {
 
-  def translatePropertyFiles {
+  def translatePropertyFiles(propertyFiles: List[File]) {
 
-    val dirs = List(new File("/Users/soren/Documents/workspace/trunk/DanishAdvLifeWeb/resources")
-    )
-    dirs.foreach(dir => {
+    propertyFiles.foreach(dir => {
 
       dir.listFiles().filterNot(f => !f.getName.endsWith("_en.properties")).foreach(f => f.delete())
 
@@ -42,10 +40,9 @@ class Translate {
     })
   }
 
-  def translateJavaClass {
-    val writer = new FileWriter(new File("/Users/soren/Documents/workspace/trunk/DanishAdvLifeWeb/src", "generated_en.properties"))
-    val dirs = new File("/Users/soren/Documents/workspace/trunk/DanishAdvLifeWeb/src/com/schantz/keys/").listFiles.filterNot(p => p.getName.startsWith("."))
-    val result = dirs.par.map(
+  def translateJavaClass(javaFiles: Array[File]) {
+    val writer = new FileWriter(new File("generated_en.properties"))
+    val result = javaFiles.par.map(
       file => {
         println("Processing file " + file.getCanonicalPath)
         val lines = Source.fromFile(file, "utf8").getLines()
@@ -76,7 +73,8 @@ class Translate {
 object Translate {
   def main(args: Array[String]) {
     val start = System.currentTimeMillis()
-    new Translate().translateJavaClass
+    val javaAndProperties = args.map(s => new File(s)).partition(p => p.getName.endsWith(".properties"))
+    new Translate().translateJavaClass(javaAndProperties._1)
     val stop = System.currentTimeMillis()
     println("took " + (stop - start) + " ms.")
   }
